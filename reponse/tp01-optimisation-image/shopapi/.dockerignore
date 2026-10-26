@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log*
+.git
+.gitignore
+.env
+.env.*
+*.sql
+dump-*.sql
+Dockerfile*
+docker-compose*
+README*
+DIAGNOSTIC*
+RAPPORT*
+**/.DS_Store
+coverage
+.nyc_output
+*.md
