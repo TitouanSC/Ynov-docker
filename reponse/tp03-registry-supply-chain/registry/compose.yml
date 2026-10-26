@@ -1,0 +1,50 @@
+services:
+  registry:
+    image: registry:2.8.3
+    restart: unless-stopped
+    ports:
+      # 5000 souvent pris par AirPlay (macOS) → 5500 côté hôte
+      - "5500:5000"
+    volumes:
+      - registry-data:/var/lib/registry
+      - ./config/config.yml:/etc/docker/registry/config.yml:ro
+      - ./certs:/certs:ro
+      - ./auth:/auth:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null --no-check-certificate https://127.0.0.1:5000/v2/ || exit 0"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  registry-ui:
+    image: joxit/docker-registry-ui:2.5.0
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      REGISTRY_TITLE: Shop SAS Registry
+      NGINX_PROXY_PASS_URL: https://registry:5000
+      SINGLE_REGISTRY: "true"
+      DELETE_IMAGES: "true"
+      SHOW_CONTENT_DIGEST: "true"
+    depends_on:
+      - registry
+
+  registry-mirror:
+    image: registry:2.8.3
+    restart: unless-stopped
+    ports:
+      - "5501:5001"
+    volumes:
+      - mirror-data:/var/lib/registry
+      - ./config/mirror.yml:/etc/docker/registry/config.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5001/v2/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  registry-data:
+  mirror-data:

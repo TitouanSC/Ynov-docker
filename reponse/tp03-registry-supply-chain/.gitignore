@@ -1,0 +1,10 @@
+cosign.key
+cosign.pub
+*.pem
+registry/certs/*.key
+registry/certs/*.csr
+registry/certs/*.srl
+registry/certs/ca.srl
+sbom.json
+.env
+.env.*
