@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  # Découverte DNS des réplicas API (évite docker_sd : Prometheus tourne non-root)
+  - job_name: shop-api
+    dns_sd_configs:
+      - names: [api]
+        type: A
+        port: 3000
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: service
+        replacement: api
+
+  - job_name: shop-worker
+    static_configs:
+      - targets: ["worker:9100"]
+        labels:
+          service: worker

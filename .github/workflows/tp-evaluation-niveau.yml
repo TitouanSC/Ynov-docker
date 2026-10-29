@@ -1,0 +1,29 @@
+name: tp-evaluation-niveau
+
+on:
+  push:
+    paths:
+      - "reponse/tp-evaluation-niveau/**"
+      - ".github/workflows/tp-evaluation-niveau.yml"
+  pull_request:
+    paths:
+      - "reponse/tp-evaluation-niveau/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reponse/tp-evaluation-niveau
+    steps:
+      - uses: actions/checkout@v4
+      - name: create dummy secrets for config validation
+        run: |
+          mkdir -p secrets
+          echo dummy-root > secrets/db_root_password.txt
+          echo dummy-pass > secrets/db_password.txt
+      - name: validate compose
+        run: docker compose config >/dev/null
+      - name: ensure no plaintext db passwords in compose
+        run: |
+          ! grep -E 'MARIADB_ROOT_PASSWORD:|WORDPRESS_DB_PASSWORD:' compose.yaml

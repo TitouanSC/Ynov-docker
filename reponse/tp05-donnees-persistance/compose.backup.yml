@@ -1,0 +1,22 @@
+# Sidecar sauvegarde planifiée — à lancer avec la stack shop (TP04) :
+# docker compose -f ../../tp04.../compose.yml -f compose.backup.yml --profile backup up -d
+# Ici version autonome branchée sur shopdata :
+name: shopdata
+services:
+  pg-backup:
+    image: prodrigestivill/postgres-backup-local:16
+    profiles: [backup]
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: shop
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+      SCHEDULE: "@every 1m"
+      BACKUP_KEEP_DAYS: "7"
+      HEALTHCHECK_PORT: "8080"
+    volumes:
+      - ./backups/scheduled:/backups
+    depends_on:
+      db:
+        condition: service_healthy

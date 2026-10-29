@@ -1,0 +1,27 @@
+version: 0.1
+log:
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+  delete:
+    enabled: true
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+  tls:
+    certificate: /certs/registry.crt
+    key: /certs/registry.key
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+auth:
+  htpasswd:
+    realm: shop-registry
+    path: /auth/htpasswd
