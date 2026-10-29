@@ -1,0 +1,31 @@
+# Surcharge DEV — appliquée automatiquement avec `docker compose up`
+services:
+  traefik:
+    command:
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --ping=true
+    ports:
+      - "80:80"
+      - "8080:8080"
+
+  db:
+    ports:
+      - "5432:5432"
+
+  api:
+    build: ./apps/shopapi
+    ports:
+      - "3000:3000"
+    environment:
+      LOG_LEVEL: debug
+    volumes:
+      - ./apps/shopapi/src:/app/src:ro
+    command: ["node", "--watch", "src/server.js"]
+
+  worker:
+    environment:
+      LOG_LEVEL: DEBUG

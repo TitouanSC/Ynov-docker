@@ -1,0 +1,5 @@
+.env
+secrets/db_password.txt
+secrets/*
+!secrets/.gitkeep
+!secrets/db_password.txt.example
