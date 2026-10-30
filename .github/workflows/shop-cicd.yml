@@ -1,0 +1,19 @@
+name: shop-cicd
+on:
+  push:
+    paths: ["reponse/tp09-cicd-deploiement/**"]
+  pull_request:
+    paths: ["reponse/tp09-cicd-deploiement/**"]
+jobs:
+  ci-local:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: hadolint + compose config + build
+        working-directory: reponse/tp09-cicd-deploiement
+        run: |
+          chmod +x ci-local.sh
+          # sous CI sans registre local : build + lint uniquement
+          docker run --rm -i hadolint/hadolint < shop/apps/shopapi/Dockerfile
+          docker compose -f shop/compose.yml -f shop/compose.override.yml config >/dev/null
+          docker compose -f shop/compose.yml -f shop/compose.override.yml build

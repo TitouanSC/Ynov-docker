@@ -1,0 +1,9 @@
+services:
+  app:
+    ports: ["8083:80"]
+    environment:
+      LOG_FILE: php://stderr
+  db:
+    ports: ["3307:3306"]
+  mailpit:
+    profiles: []

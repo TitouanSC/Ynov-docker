@@ -1,0 +1,7 @@
+== smoke-test against http://api.localhost ==
+→ /ready
+→ /products (MISS puis HIT cache)
+→ POST /orders
+→ attente confirmation worker
+order status=confirmed
+OK smoke-test

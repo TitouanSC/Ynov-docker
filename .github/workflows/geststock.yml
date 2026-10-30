@@ -1,0 +1,27 @@
+name: geststock-ci
+on:
+  push:
+    paths: ["reponse/tp10-projet-fil-rouge/geststock-docker/**"]
+  pull_request:
+    paths: ["reponse/tp10-projet-fil-rouge/geststock-docker/**"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reponse/tp10-projet-fil-rouge/geststock-docker
+    steps:
+      - uses: actions/checkout@v4
+      - name: php lint
+        run: |
+          docker run --rm -v "$PWD/app:/app" php:8.3-cli \
+            bash -lc 'find /app -name "*.php" -print0 | xargs -0 -n1 php -l'
+      - name: compose up smoke
+        run: |
+          echo ci > secrets/db_password.txt
+          echo ci-root > secrets/db_root_password.txt
+          docker compose down -v --remove-orphans || true
+          docker compose up -d --build --wait
+          curl -sf 'http://127.0.0.1:8083/?health' | grep OK
+          docker compose --profile ops run --rm rapport | grep Articles
+          docker compose down -v

@@ -1,0 +1,7 @@
+CONTAINER                    USER         PRIV   CAP_DROP   RO         MEM      PIDS       NNP      SOCKET
+shop-traefik-1               65532        false  ["ALL"]    false      134217728 256        ["no-new-privileges:true"] sock=0
+shop-api-1                   1000         false  ["ALL"]    true       268435456 256        ["no-new-privileges:true"] sock=0
+shop-worker-1                10001        false  ["ALL"]    true       268435456 256        ["no-new-privileges:true"] sock=0
+shop-db-1                    ROOT!        false  ["ALL"]    true       536870912 256        ["no-new-privileges:true"] sock=0
+shop-redis-1                 999          false  ["ALL"]    true       134217728 256        ["no-new-privileges:true"] sock=0
+shop-socket-proxy-1          ROOT!        false  ["ALL"]    false      67108864 256        ["no-new-privileges:true"] sock=1

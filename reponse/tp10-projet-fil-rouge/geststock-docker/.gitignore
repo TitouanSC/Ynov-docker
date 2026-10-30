@@ -1,0 +1,9 @@
+.env
+secrets/*.txt
+!secrets/.gitkeep
+!secrets/*.example
+uploads/*
+!uploads/.gitkeep
+backups/*
+!backups/.gitkeep
+uploads-legacy/
