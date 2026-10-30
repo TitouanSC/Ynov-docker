@@ -1,0 +1,113 @@
+name: geststock
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --entrypoints.web.address=:80
+      - --ping=true
+    ports: ["8082:80"]
+    volumes:
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+    networks: [front]
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 5s
+      retries: 10
+    logging: *logging
+    restart: unless-stopped
+
+  app:
+    build: .
+    image: geststock:local
+    environment:
+      DB_HOST: db
+      DB_NAME: geststock
+      DB_USER: geststock
+      DB_PASS_FILE: /run/secrets/db_password
+      UPLOAD_DIR: /var/www/uploads/
+      LOG_FILE: php://stderr
+      SMTP_HOST: mailpit
+      REPORT_TO: direction@shop.example
+    secrets: [db_password]
+    volumes:
+      - uploads:/var/www/uploads
+    networks: [front, back]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://127.0.0.1/?health' | grep -q OK"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 20s
+    logging: *logging
+    restart: unless-stopped
+
+  db:
+    image: mariadb:11.4.2
+    environment:
+      MYSQL_DATABASE: geststock
+      MYSQL_USER: geststock
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets: [db_password, db_root_password]
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./app/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks: [back]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 20
+      start_period: 20s
+    logging: *logging
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    profiles: [tools]
+    ports: ["8025:8025"]
+    networks: [back]
+    logging: *logging
+
+  rapport:
+    image: geststock:local
+    profiles: [ops]
+    user: www-data
+    entrypoint: ["php", "/var/www/app/bin/rapport.php"]
+    environment:
+      DB_HOST: db
+      DB_NAME: geststock
+      DB_USER: geststock
+      DB_PASS_FILE: /run/secrets/db_password
+      SMTP_HOST: mailpit
+      LOG_FILE: php://stderr
+    secrets: [db_password]
+    networks: [back]
+    depends_on:
+      db:
+        condition: service_healthy
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  db_root_password:
+    file: ./secrets/db_root_password.txt
+
+networks:
+  front:
+    name: geststock_front
+  back:
+    name: geststock_back
+    internal: true
+
+volumes:
+  dbdata:
+  uploads:
