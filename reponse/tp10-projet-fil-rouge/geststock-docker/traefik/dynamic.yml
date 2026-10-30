@@ -1,0 +1,14 @@
+http:
+  routers:
+    geststock:
+      rule: Host(`geststock.localhost`) || PathPrefix(`/`)
+      entryPoints: [web]
+      service: geststock
+  services:
+    geststock:
+      loadBalancer:
+        servers:
+          - url: http://app:80
+        healthCheck:
+          path: /?health
+          interval: 5s

@@ -1,0 +1,26 @@
+# Routage fichier (fallback fiable sur Docker Desktop quand le provider Docker
+# échoue sur l'API Engine récente). Les labels Traefik restent déclarés sur les services.
+http:
+  routers:
+    api:
+      rule: Host(`api.localhost`)
+      entryPoints: [web]
+      service: api
+    adminer:
+      rule: Host(`adminer.localhost`)
+      entryPoints: [web]
+      service: adminer
+
+  services:
+    api:
+      loadBalancer:
+        servers:
+          - url: http://api:3000
+        healthCheck:
+          path: /health
+          interval: 5s
+          timeout: 3s
+    adminer:
+      loadBalancer:
+        servers:
+          - url: http://adminer:8080

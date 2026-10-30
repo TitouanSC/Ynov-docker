@@ -1,0 +1,7 @@
+.git
+uploads/*
+backups/*
+*.md
+secrets/*
+!secrets/.gitkeep
+.env
